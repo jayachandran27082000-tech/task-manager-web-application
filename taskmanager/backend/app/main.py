@@ -4,8 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 
-from app.database import init_db
-from app.routers import auth_router, tasks_router
+from .database import init_db
+from .routers import auth_router, tasks_router
 
 app = FastAPI(
     title="Task Manager API",

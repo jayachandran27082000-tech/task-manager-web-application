@@ -9,10 +9,11 @@ from .routers import auth_router, tasks_router
 
 app = FastAPI(
     title="Task Manager API",
-    description="A simple task manager with JWT authentication",
-    version="1.0.0",
+    description="Task Manager with JWT Authentication",
+    version="1.0.0"
 )
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,30 +22,53 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Startup event
 @app.on_event("startup")
-def on_startup():
-    init_db()
+def startup():
+    try:
+        init_db()
+        print("Database initialized")
+    except Exception as e:
+        print("Database init failed:", e)
 
 
+# Include routers
 app.include_router(auth_router)
 app.include_router(tasks_router)
 
 
-# Serve frontend static files if they exist
-frontend_path = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
-if os.path.isdir(frontend_path):
-    app.mount("/static", StaticFiles(directory=frontend_path), name="static")
-
-    @app.get("/", include_in_schema=False)
-    def serve_frontend():
-        return FileResponse(os.path.join(frontend_path, "index.html"))
-else:
-    @app.get("/", include_in_schema=False)
-    def root():
-        return {"message": "Task Manager API", "docs": "/docs"}
-
-
-@app.get("/health", tags=["Health"])
-def health_check():
+# Health check
+@app.get("/health")
+def health():
     return {"status": "ok"}
+
+
+# Root endpoint
+@app.get("/")
+def root():
+    return {
+        "message": "Task Manager API Running",
+        "docs": "/docs"
+    }
+
+
+# Optional frontend support
+frontend_path = os.path.join(
+    os.path.dirname(__file__),
+    "..",
+    "..",
+    "frontend"
+)
+
+if os.path.exists(frontend_path):
+    app.mount(
+        "/static",
+        StaticFiles(directory=frontend_path),
+        name="static"
+    )
+
+    @app.get("/app", include_in_schema=False)
+    def serve_frontend():
+        return FileResponse(
+            os.path.join(frontend_path, "index.html")
+        )

@@ -6,24 +6,14 @@ from passlib.context import CryptContext
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password: str) -> str:
-    # bcrypt has a 72-byte input limit; truncate bytes to avoid ValueError
-    if isinstance(password, str):
-        pw_bytes = password.encode("utf-8")
-        if len(pw_bytes) > 72:
-            password = pw_bytes[:72].decode("utf-8", errors="ignore")
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # truncate incoming plain password the same way as when hashing
-    if isinstance(plain_password, str):
-        pw_bytes = plain_password.encode("utf-8")
-        if len(pw_bytes) > 72:
-            plain_password = pw_bytes[:72].decode("utf-8", errors="ignore")
     return pwd_context.verify(plain_password, hashed_password)
 
 
